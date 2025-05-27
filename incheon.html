@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incheon Airport Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* MAP SCREEN */
+        .map-screen {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            flex-direction: column;
+        }
+
+        .map-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-header {
+            background: #1e3a8a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .map-content {
+            padding: 40px;
+            height: calc(100% - 80px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .terminal-layout {
+            width: 100%;
+            height: 300px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .terminal-label {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e3a8a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .gate-area {
+            position: absolute;
+            width: 60px;
+            height: 40px;
+            background: #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .gate-1 { top: 60px; left: 50px; }
+        .gate-2 { top: 60px; right: 50px; }
+        .gate-3 { bottom: 60px; left: 50px; }
+        .gate-4 { bottom: 60px; right: 50px; }
+
+        .info-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .info-panel {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .info-panel h3 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+
+        .magic-button {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(45deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            color: #9a4ade;
+            font-size: 14px;
+            font-weight: 300;
+            cursor: pointer;
+            padding: 15px 25px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            animation: mysticalGlow 3s ease-in-out infinite;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .magic-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                transparent,
+                rgba(138, 43, 226, 0.1),
+                rgba(75, 0, 130, 0.2),
+                rgba(148, 0, 211, 0.1),
+                transparent
+            );
+            animation: rotate 4s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes mysticalGlow {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 10px rgba(138, 43, 226, 0.4),
+                    0 0 20px rgba(138, 43, 226, 0.2);
+                opacity: 0.8;
+            }
+            50% { 
+                box-shadow: 
+                    0 0 20px rgba(138, 43, 226, 0.8),
+                    0 0 40px rgba(138, 43, 226, 0.4),
+                    0 0 80px rgba(75, 0, 130, 0.3);
+                opacity: 1;
+            }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .magic-button:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 30px rgba(138, 43, 226, 1),
+                0 0 60px rgba(138, 43, 226, 0.6);
+        }
+
+        /* FLOWER SCREEN */
+        .flower-screen {
+            background: #000000;
+            flex-direction: column;
+        }
+
+        .screen-title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+
+        .flower-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .bloom-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+        }
+
+        .petal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 30px;
+            background: linear-gradient(to top, 
+                rgba(255, 182, 193, 0.9), 
+                rgba(255, 220, 230, 1),
+                rgba(255, 255, 255, 0.9));
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform-origin: center bottom;
+            transform: translate(-50%, -100%) scale(0);
+            opacity: 0;
+            filter: blur(0.3px);
+            box-shadow: 0 0 5px rgba(255, 182, 193, 0.3);
+        }
+
+        .inner-petal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 20px;
+            background: linear-gradient(to top, 
+                rgba(255, 240, 245, 0.9), 
+                rgba(255, 255, 255, 1));
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform-origin: center bottom;
+            transform: translate(-50%, -100%) scale(0);
+            opacity: 0;
+            filter: blur(0.2px);
+        }
+
+        .tiny-petal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 12px;
+            background: linear-gradient(to top, 
+                rgba(255, 255, 255, 0.8), 
+                rgba(255, 255, 255, 1));
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform-origin: center bottom;
+            transform: translate(-50%, -100%) scale(0);
+            opacity: 0;
+            filter: blur(0.1px);
+        }
+
+        .petal.bloom {
+            animation: petalBloom 1s ease-out forwards;
+        }
+
+        .inner-petal.bloom {
+            animation: innerPetalBloom 0.8s ease-out forwards;
+        }
+
+        .tiny-petal.bloom {
+            animation: tinyPetalBloom 0.6s ease-out forwards;
+        }
+
+        @keyframes petalBloom {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -100%) scale(0) rotate(var(--rotation, 0deg));
+            }
+            60% {
+                opacity: 0.9;
+                transform: translate(-50%, -100%) scale(1.1) rotate(var(--rotation, 0deg)) translateY(-5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -100%) scale(1) rotate(var(--rotation, 0deg)) translateY(-3px);
+            }
+        }
+
+        @keyframes innerPetalBloom {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -100%) scale(0) rotate(var(--rotation, 0deg));
+            }
+            60% {
+                opacity: 0.95;
+                transform: translate(-50%, -100%) scale(1.1) rotate(var(--rotation, 0deg)) translateY(-3px);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -100%) scale(1) rotate(var(--rotation, 0deg)) translateY(-2px);
+            }
+        }
+
+        @keyframes tinyPetalBloom {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -100%) scale(0) rotate(var(--rotation, 0deg));
+            }
+            60% {
+                opacity: 1;
+                transform: translate(-50%, -100%) scale(1.1) rotate(var(--rotation, 0deg)) translateY(-1px);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -100%) scale(1) rotate(var(--rotation, 0deg));
+            }
+        }
+
+        .tap-text {
+            font-size: 16px;
+            font-weight: 300;
+            color: #ffffff;
+            opacity: 0;
+            letter-spacing: 1px;
+            animation: textFadeIn 1s ease-out forwards;
+            text-align: center;
+        }
+
+        @keyframes textFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bloom-container:hover .petal {
+            filter: blur(0.1px);
+            box-shadow: 0 0 10px rgba(255, 182, 193, 0.6);
+        }
+
+        .bloom-container:hover .tap-text {
+            color: #ffcccb;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* QR SCREEN */
+        .qr-screen {
+            background: #000000;
+            flex-direction: column;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #000;
+            margin: 0 auto 20px;
+            position: relative;
+            border-radius: 10px;
+        }
+
+        .qr-pattern {
+            position: absolute;
+            background: white;
+        }
+
+        .qr-1 { width: 60px; height: 60px; top: 20px; left: 20px; }
+        .qr-2 { width: 60px; height: 60px; top: 20px; right: 20px; }
+        .qr-3 { width: 60px; height: 60px; bottom: 20px; left: 20px; }
+        .qr-4 { width: 20px; height: 20px; top: 90px; left: 90px; }
+        .qr-5 { width: 40px; height: 10px; top: 100px; right: 30px; }
+        .qr-6 { width: 10px; height: 40px; bottom: 40px; right: 50px; }
+        .qr-7 { width: 30px; height: 30px; top: 50px; left: 100px; }
+
+        .qr-title {
+            color: #333;
+            font-size: 18px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .qr-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .screen-transition {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- MAP SCREEN -->
+    <div class="screen map-screen active" id="map-screen">
+        <div class="map-container">
+            <div class="map-header">
+                INCHEON INTERNATIONAL AIRPORT
+            </div>
+            <div class="map-content">
+                <div class="terminal-layout">
+                    <div class="terminal-label">Terminal 1</div>
+                    <div class="gate-area gate-1">A1-5</div>
+                    <div class="gate-area gate-2">A6-10</div>
+                    <div class="gate-area gate-3">B1-5</div>
+                    <div class="gate-area gate-4">B6-10</div>
+                </div>
+                
+                <div class="info-panels">
+                    <div class="info-panel">
+                        <h3>Departures</h3>
+                        <p>Gate A1-A10<br>3rd Floor</p>
+                    </div>
+                    <div class="info-panel">
+                        <h3>Arrivals</h3>
+                        <p>Gate B1-B10<br>1st Floor</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="magic-button" onclick="startFlowerShow()">
+            Do you like adventure?
+        </button>
+    </div>
+
+    <!-- FLOWER SCREEN -->
+    <div class="screen flower-screen" id="flower-screen">
+        <div class="screen-title">DIGITAL ADVENTURE</div>
+        <div class="flower-area">
+            <div class="bloom-container" id="bloom-container" onclick="showQR()">
+                <!-- Petals will be created by JavaScript -->
+            </div>
+            <div class="tap-text" id="tap-text">TAP TO BEGIN</div>
+        </div>
+        <button class="back-btn" onclick="goToMap()">← Back</button>
+    </div>
+
+    <!-- QR SCREEN -->
+    <div class="screen qr-screen" id="qr-screen">
+        <div class="qr-container">
+            <div class="qr-code">
+                <div class="qr-pattern qr-1"></div>
+                <div class="qr-pattern qr-2"></div>
+                <div class="qr-pattern qr-3"></div>
+                <div class="qr-pattern qr-4"></div>
+                <div class="qr-pattern qr-5"></div>
+                <div class="qr-pattern qr-6"></div>
+                <div class="qr-pattern qr-7"></div>
+            </div>
+            <div class="qr-title">Scan to Continue</div>
+            <div class="qr-subtitle">Your adventure awaits</div>
+        </div>
+        <button class="back-btn" onclick="goToFlower()">← Back</button>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            const targetScreen = document.getElementById(screenId);
+            targetScreen.classList.add('active');
+            targetScreen.classList.add('screen-transition');
+            
+            setTimeout(() => {
+                targetScreen.classList.remove('screen-transition');
+            }, 800);
+        }
+
+        function startFlowerShow() {
+            showScreen('flower-screen');
+            setTimeout(() => {
+                createFlowerBoom();
+            }, 800);
+        }
+
+        function createFlowerBoom() {
+            const container = document.getElementById('bloom-container');
+            const tapText = document.getElementById('tap-text');
+            
+            // Create outer petals (8개)
+            for (let i = 0; i < 8; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.setProperty('--rotation', `${i * 45}deg`);
+                container.appendChild(petal);
+                
+                setTimeout(() => {
+                    petal.classList.add('bloom');
+                }, i * 150);
+            }
+            
+            // Create inner petals (6개)
+            setTimeout(() => {
+                for (let i = 0; i < 6; i++) {
+                    const innerPetal = document.createElement('div');
+                    innerPetal.className = 'inner-petal';
+                    innerPetal.style.setProperty('--rotation', `${i * 60 + 30}deg`);
+                    container.appendChild(innerPetal);
+                    
+                    setTimeout(() => {
+                        innerPetal.classList.add('bloom');
+                    }, i * 100);
+                }
+            }, 800);
+            
+            // Create tiny center petals (4개)
+            setTimeout(() => {
+                for (let i = 0; i < 4; i++) {
+                    const tinyPetal = document.createElement('div');
+                    tinyPetal.className = 'tiny-petal';
+                    tinyPetal.style.setProperty('--rotation', `${i * 90 + 45}deg`);
+                    container.appendChild(tinyPetal);
+                    
+                    setTimeout(() => {
+                        tinyPetal.classList.add('bloom');
+                    }, i * 80);
+                }
+            }, 1400);
+            
+            // Show text
+            setTimeout(() => {
+                tapText.style.animationDelay = '0s';
+            }, 2000);
+        }
+
+        function showQR() {
+            showScreen('qr-screen');
+        }
+
+        function goToMap() {
+            showScreen('map-screen');
+        }
+
+        function goToFlower() {
+            showScreen('flower-screen');
+        }
+
+        // Interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.gate-area').forEach(gate => {
+                gate.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.background = '#2563eb';
+                });
+                
+                gate.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                    this.style.background = '#3b82f6';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
